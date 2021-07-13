@@ -4,7 +4,9 @@
   "description": "Chess Board GUI",
   "main": "morphy.js",
   "scripts": {
-    "start": "open -a 'Google Chrome' morphy.html",
+    "foo": "open -a 'Google Chrome' js/morphy.html --args -allow-file-access-from-files",
+    "baz": "open -a 'Google Chrome' js/morphy.html",
+    "start": "open -a 'Google Chrome' http://127.0.0.1:8887",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -16,5 +18,8 @@
     "games"
   ],
   "author": "Mark R Cornwell",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "baconjs": "^3.0.17"
+  }
 }
