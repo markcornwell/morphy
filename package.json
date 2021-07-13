@@ -6,7 +6,7 @@
   "scripts": {
     "foo": "open -a 'Google Chrome' js/morphy.html --args -allow-file-access-from-files",
     "baz": "open -a 'Google Chrome' js/morphy.html",
-    "start": "open -a 'Google Chrome' http://127.0.0.1:8887",
+    "start": "open -a 'Google Chrome' http://127.0.0.1:8887 --args -auto-open-devtools-for-tabs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
