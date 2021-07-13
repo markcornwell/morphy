@@ -1,0 +1,20 @@
+{
+  "name": "morphy",
+  "version": "1.0.0",
+  "description": "Chess Board GUI",
+  "main": "morphy.js",
+  "scripts": {
+    "start": "open -a 'Google Chrome' morphy.html",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "morphy"
+  },
+  "keywords": [
+    "chess",
+    "games"
+  ],
+  "author": "Mark R Cornwell",
+  "license": "MIT"
+}
