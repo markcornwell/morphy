@@ -183,6 +183,9 @@ function emptyPosition () {
         FullMoveCounter: 0
 }}
 
+
+//---------------------------------
+
 //--------------------------------------------------------------------------
 // Parse Forsyth-Edwwards Notation (FEN) to set up a position on the Board.
 // The parser uses recursive descent through the BNF that defines FEN.
@@ -351,9 +354,9 @@ function parse(fen) {
 //-----------------------------------------------------------------
 // unparse: Position -> String
 function unparse(P) {
-    fenstring = "";
+    var fenstring = ""
     // <Piece placement>
-    emptySquareCount = 0
+    var emptySquareCount = 0
     for (let i=0 ; i<64 ; i++) {
         if (P.Board[i]==NONE) {
             emptySquareCount++;
@@ -530,7 +533,7 @@ async function testall() {
 //-------------------------------------------------------------------------
 
 //-------------------------------------------------------------------------
-// Experiments with Bacon -- the Modern Way
+// Experiments with Bacon -- A Functional Reactive Programming Libnrary
 //-------------------------------------------------------------------------
 
 // initialize event stream
@@ -538,10 +541,11 @@ const pointerDownStream = Bacon.fromEvent(document, 'pointerdown');
 const pointerMoveStream = Bacon.fromEvent(document, 'pointermove');
 const pointerUpStream = Bacon.fromEvent(document, 'pointerup');
 
+
 // Subscription callback
 pointerDownStream.onValue(PointerDownEvent => {
     const { clientX, clientY } = PointerDownEvent;
-    Bacon.once("pointerdown " + String(clientX) + "," + String(clientY)).log() 
+    Bacon.once("pointerdown " + String(clientX) + "," + String(clientY)).log()
 })
 
 const pointerDownInBoxStream = pointerDownStream.filter(pointerDownEvent => {
@@ -549,7 +553,7 @@ const pointerDownInBoxStream = pointerDownStream.filter(pointerDownEvent => {
     return inBox(clientX,clientY,BoardTopLeftX, BoardTopLeftY, BoardSize, BoardSize)
 })
 
-// Stream of square selections
+// Square selections
 const squareSelectStream = pointerDownInBoxStream.map(PointerDownEvent => {
     const { clientX, clientY } = PointerDownEvent;
     return findSquare(clientX,clientY)
@@ -559,8 +563,56 @@ squareSelectStream.onValue(SquareSelectEvent => {
     Bacon.once("squareSelect " + SquareSelectEvent).log()
 })
 
+// Move event stream build up from square selection events.
+// Clicking on same square twice cancels out move selection.
+const moveStream = squareSelectStream.bufferWithCount(2).filter(e => {
+    return e[0]!=e[1]
+})
+moveStream.log("move:")
+
+// Stream of positions constructed from the moveStream
+const startPosition = parse("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+const positionStream = moveStream.scan(startPosition,nextPosition)
+
+positionStream.map(unparse).log("posn:")
+
+// Resize Events -- not working yet
+
+const resizeEventStream = Bacon.fromEvent(canvas, 'resize')
+
+resizeEventStream.onValue(ResizeEvent => {
+    Bacon.once("resize" + ResizeEvent).log("resize")
+})
+
+// ------ experimental -----------
+
+// Issue: at this point move could be any two squares.  E.g. from square may be empty
+// or opponent piece, toSquare could be owm piece.  Where do we put in those constraints?
+// Requires knowledge of the board position, not just squares.
+
+// Somewhere we need a sequence of P1 m1 P2 m2 P3 m3 ....
+// 
+
+function nextPosition(P,move) {
+    return Object.assign( {}, P, { 
+        Board: nextBoard(P, move),
+        SideToMove: ( WHITE ? BLACK : WHITE ),
+        HalfMoveClock: P.HalfMoveClock + 1,
+        FullMoveCounter: (P.SideToMove == WHITE ? P.FullMoveCounter + 1 : P.FullMoveCounter)
+    })
+}
+
+function nextBoard(P,move) {
+    var board = [... P.Board]
+    if ((Color(P.Board[move[0]]) == P.SideToMove) && Color(P.Board[move[1]]) != P.SideToMove) {
+        board[move[0]] = NONE
+        board[move[1]] = P.Board[move[0]]
+    }
+    return board
+}
+
 //-------------------------------------------------------------------------
-//            MouseDown Event  -- Old Fashion Way
+//            MouseDown Event  -- Old Fashion Way with Event Listeners
 //-------------------------------------------------------------------------
 
 canvas.addEventListener("mousedown", doMouseDown, false);
@@ -569,12 +621,11 @@ const READY  = 0;
 const MOVING = 1;
 
 // Lots of state variables.  Challenge to do this in a functional style.
-var State = READY;
+export var State = READY;
 var FromSq;
 var DestSq;
 
-
-// note" there should be absolutely no references to _P above this line.
+// note: there should be absolutely no references to _P above this line.
 var _P = emptyPosition();  // mutable Position shared by mouse events below
 
 function doMouseDown(event) {
@@ -659,8 +710,8 @@ function findSquare( x, y ) {
     return row * 8 + col;
 }
 
-// Successively halves the interval [log,hib] three times to find 
-// which of 8 equal size segements (0..7) bounds the given coordinate.
+// Successively halves the [lob,hib] interval n=3 times to find 
+// which of 2^n = 8 equal size segements (0..7) bounds the given coordinate.
 // Same algorihtm applies to finding row (y-coord) and col (x-coord).
 function bound( x, lob, hib, n, d) {
 	//console.log(x, lob, hib, n, d);
