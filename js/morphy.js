@@ -578,11 +578,17 @@ positionStream.map(unparse).log("posn:")
 
 // Resize Events -- not working yet
 
+/***
 const resizeEventStream = Bacon.fromEvent(canvas, 'resize')
 
 resizeEventStream.onValue(ResizeEvent => {
     Bacon.once("resize" + ResizeEvent).log("resize")
 })
+***/
+
+const resizeEventStream = Bacon.fromEvent(canvas, "resize")
+
+resizeEventStream.onValue(ResizeEvent => console.log(ResizeEvent))
 
 // ------ experimental -----------
 
